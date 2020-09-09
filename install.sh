@@ -11,8 +11,8 @@ docker rm -f "$APPNAME"
 docker pull portainer/portainer-ce
 fi
 docker run -d \
--p 127.0.0.1:8000:8000 \
--p 127.0.0.1:9010:9000 \
+-p 8000:8000 \
+-p 9010:9000 \
 --restart always \
 --name "$APPNAME" \
 -v $DATADIR:/data \
