@@ -59,6 +59,7 @@ if [ -f "$INSTDIR/docker-compose.yml" ]; then
   printf_blue "Installing containers using docker compose"
   sed -i "s|REPLACE_DATADIR|$DATADIR" "$INSTDIR/docker-compose.yml"
   if cd "$INSTDIR"; then
+    sudo docker rm "$APPNAME" -f &>/dev/null
     sudo docker-compose pull &>/dev/null
     sudo docker-compose up -d &>/dev/null
   fi
@@ -84,9 +85,8 @@ fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if docker ps -a | grep -qs "$APPNAME"; then
   printf_blue "Service is available at: http://$HOSTNAME:9010"
-  printf_green "Successfully setup portainer-ce"
 else
-  printf_return "Could not setup portainer-ce"
+  false
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # End script
