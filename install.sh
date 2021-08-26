@@ -7,6 +7,7 @@ HOME="${USER_HOME:-${HOME}}"
 SRC_DIR="${BASH_SOURCE%/*}"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 #set opts
+exit 1
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ##@Version       : 202107311147-git
@@ -40,49 +41,60 @@ fi
 # user system devenv dfmgr dockermgr fontmgr iconmgr pkmgr systemmgr thememgr wallpapermgr
 dockermgr_install
 __options "$@"
+__sudo() { if sudo -n true; then eval sudo "$*"; else eval "$*"; fi; }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Begin installer
 APPNAME="portainer-ce"
 DOCKER_HUB_URL="portainer/portainer-ce"
+PORTAINER_CE_SERVER_PORT="${PORTAINER_CE_SERVER_PORT:-9010}"
+PORTAINER_CE_SERVER_HOST="${PORTAINER_CE_SERVER_HOST:-$(hostname -f 2>/dev/null)}"
+REPO="${DOCKERMGRREPO:-https://github.com/dockermgr}/$APPNAME"
+REPO_BRANCH="${GIT_REPO_BRANCH:-main}"
+PORTAINER_CE_SERVER_TIMEZONE="${TZ:-${TIMEZONE:-America/New_York}}"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-APPDIR="/usr/local/share/CasjaysDev/$SCRIPTS_PREFIX/$APPNAME"
-INSTDIR="/usr/local/share/CasjaysDev/$SCRIPTS_PREFIX/$APPNAME"
-DATADIR="/srv/docker/$APPNAME"
-REPORAW="$REPO/raw/$GIT_DEFAULT_BRANCH"
+if user_is_root; then
+  APPDIR="$CASJAYSDEVDIR/$SCRIPTS_PREFIX/$APPNAME"
+  INSTDIR="$CASJAYSDEVDIR/$SCRIPTS_PREFIX/$APPNAME"
+  DATADIR="/srv/docker/$APPNAME"
+else
+  APPDIR="$HOME/.local/share/CasjaysDev/$SCRIPTS_PREFIX/$APPNAME"
+  INSTDIR="$HOME/.local/share/CasjaysDev/$SCRIPTS_PREFIX/$APPNAME"
+  DATADIR="$HOME/.local/share/srv/docker/$APPNAME"
+fi
+REPORAW="$REPO/raw/$REPO_BRANCH"
 APPVERSION="$(__appversion "$REPORAW/version.txt")"
-TIMEZONE="${TZ:-$TIMEZONE}"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-sudo mkdir -p "$DATADIR"/{data}
-sudo chmod -Rf 777 "$DATADIR"
+__sudo mkdir -p "$DATADIR/data"
+__sudo chmod -Rf 777 "$DATADIR"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if [ -f "$INSTDIR/docker-compose.yml" ]; then
+if [ -f "$INSTDIR/docker-compose.yml" ] && cmd_exists docker-compose; then
   printf_blue "Installing containers using docker compose"
   sed -i "s|REPLACE_DATADIR|$DATADIR" "$INSTDIR/docker-compose.yml"
   if cd "$INSTDIR"; then
-    sudo docker-compose pull &>/dev/null
-    sudo docker-compose up -d &>/dev/null
+    __sudo docker-compose pull &>/dev/null
+    __sudo docker-compose up -d &>/dev/null
   fi
 else
-  if docker ps -a | grep -qs "$APPNAME"; then
-    sudo docker pull "$DOCKER_HUB_URL" &>/dev/null
-    sudo docker restart "$APPNAME" &>/dev/null
+  if docker ps -a | grep -qsw "$APPNAME"; then
+    __sudo docker pull "$DOCKER_HUB_URL" &>/dev/null
+    __sudo docker restart "$APPNAME" &>/dev/null
   else
-    sudo docker run -d \
+    __sudo docker run -d \
       --name="$APPNAME" \
       --hostname "$APPNAME" \
       --restart=unless-stopped \
       --privileged \
-      -e TZ=${TIMEZONE:-America/New_York} \
-      -v /var/run/docker.sock:/var/run/docker.sock \
+      -e TZ="$PORTAINER_CE_SERVER_TIMEZONE" \
       -v "$DATADIR/data":/data:z \
+      -v /var/run/docker.sock:/var/run/docker.sock \
       -p 8000:8000 \
-      -p 9010:9000 \
+      -p "$PORTAINER_CE_SERVER_PORT":9000 \
       "$DOCKER_HUB_URL" &>/dev/null
   fi
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if docker ps -a | grep -qs "$APPNAME"; then
-  printf_blue "Service is available at: http://$HOSTNAME:9010"
+  printf_blue "Service is available at: http://$PORTAINER_CE_SERVER_HOST:$PORTAINER_CE_SERVER_PORT"
 else
   false
 fi
