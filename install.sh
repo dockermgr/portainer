@@ -75,21 +75,20 @@ if [ -f "$INSTDIR/docker-compose.yml" ] && cmd_exists docker-compose; then
   fi
 else
   if docker ps -a | grep -qsw "$APPNAME"; then
-    __sudo docker pull "$DOCKER_HUB_URL" &>/dev/null
-    __sudo docker restart "$APPNAME" &>/dev/null
-  else
-    __sudo docker run -d \
-      --name="$APPNAME" \
-      --hostname "$APPNAME" \
-      --restart=unless-stopped \
-      --privileged \
-      -e TZ="$PORTAINER_CE_SERVER_TIMEZONE" \
-      -v "$DATADIR/data":/data:z \
-      -v /var/run/docker.sock:/var/run/docker.sock \
-      -p 8000:8000 \
-      -p "$PORTAINER_CE_SERVER_PORT":9000 \
-      "$DOCKER_HUB_URL" &>/dev/null
+    __sudo docker stop "$APPNAME" &>/dev/null
+    __sudo docker rm -f "$APPNAME" &>/dev/null
   fi
+  __sudo docker run -d \
+    --name="$APPNAME" \
+    --hostname "$APPNAME" \
+    --restart=unless-stopped \
+    --privileged \
+    -e TZ="$PORTAINER_CE_SERVER_TIMEZONE" \
+    -v "$DATADIR/data":/data:z \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -p 8000:8000 \
+    -p "$PORTAINER_CE_SERVER_PORT":9000 \
+    "$DOCKER_HUB_URL" &>/dev/null
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if docker ps -a | grep -qs "$APPNAME"; then
