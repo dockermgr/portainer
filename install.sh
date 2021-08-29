@@ -149,7 +149,7 @@ else
     -v "$DATADIR/config":/config \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -p $SERVER_PORT:$SERVER_PORT_INT \
-    -p "$SERVER_PORT_ADMIN":$SERVER_PORT_ADMIN_INT \
+    -p $SERVER_PORT_ADMIN:$SERVER_PORT_ADMIN_INT \
     "$HUB_URL" --logo https://avatars.githubusercontent.com/u/69495418 &>/dev/null
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -176,6 +176,8 @@ execute "run_postinst" "Running post install scripts"
 dockermgr_install_version
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # run exit function
+run_exit
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if docker ps -a | grep -qs "$APPNAME"; then
   printf_blue "DATADIR in $DATADIR"
   printf_cyan "Installed to $INSTDIR"
@@ -184,7 +186,6 @@ if docker ps -a | grep -qs "$APPNAME"; then
 else
   printf_error "Something seems to have gone wrong with the install"
 fi
-run_exit
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # End application
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
