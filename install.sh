@@ -188,6 +188,8 @@ if docker ps -a | grep -qs "$APPNAME"; then
   [[ -n "$SERVER_PORT" ]] && printf_blue "Service is running on: $SERVER_IP:$SERVER_PORT"
   [[ -n "$SERVER_PORT" ]] && printf_blue "and should be available at: $SERVER_HOST:$SERVER_PORT"
   [[ -z "$SERVER_PORT" ]] && printf_yellow "This container does not have a web interface"
+  [[ -n "$SERVER_PORT" ]] && printf_yellow "User: admin"
+  [[ -n "$SERVER_PORT" ]] && printf_yellow "Password: admin"
 else
   printf_error "Something seems to have gone wrong with the install"
 fi
