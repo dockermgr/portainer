@@ -66,7 +66,10 @@ APPVERSION="$(__appversion "$REPORAW/version.txt")"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Setup plugins
 HUB_URL="portainer/portainer-ce"
+NGINX_HTTP="${NGINX_HTTP:-80}"
+NGINX_HTTPS="${NGINX_HTTPS:-443}"
 SERVER_IP="${CURRIP4:-127.0.0.1}"
+SERVER_LISTEN="${SERVER_LISTEN:-$SERVER_IP}"
 SERVER_HOST="$(hostname -f 2>/dev/null || echo localhost)"
 SERVER_PORT="${SERVER_PORT:-8000}"
 SERVER_PORT_INT="${SERVER_PORT_INT:-8000}"
@@ -104,6 +107,7 @@ ensure_perms
 __sudo mkdir -p "$DATADIR/data"
 __sudo mkdir -p "$DATADIR/config"
 __sudo chmod -Rf 777 "$APPDIR"
+rm -Rf "$DATADIR/dataDir"/*/.gitkeep &>/dev/null
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Clone/update the repo
 if am_i_online; then
@@ -148,8 +152,8 @@ else
     -v "$DATADIR/data":/data \
     -v "$DATADIR/config":/config \
     -v /var/run/docker.sock:/var/run/docker.sock \
-    -p $SERVER_PORT:$SERVER_PORT_INT \
-    -p $SERVER_PORT_ADMIN:$SERVER_PORT_ADMIN_INT \
+    -p $SERVER_LISTEN:$SERVER_PORT:$SERVER_PORT_INT \
+    -p $SERVER_LISTEN:$SERVER_PORT_ADMIN:$SERVER_PORT_ADMIN_INT \
     "$HUB_URL" --logo https://avatars.githubusercontent.com/u/69495418 &>/dev/null
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -158,9 +162,11 @@ if [[ ! -f "/etc/nginx/vhosts.d/$APPNAME.conf" ]] && [[ -f "$APPDIR/nginx/proxy.
   if __port_not_in_use "$SERVER_PORT"; then
     printf_green "Copying the nginx configuration"
     __sudo_root cp -Rf "$APPDIR/nginx/proxy.conf" "/etc/nginx/vhosts.d/$APPNAME.conf"
-    sed -i "s|REPLACE_APPNAME|$APPNAME|g" "/etc/nginx/vhosts.d/$APPNAME.conf"
-    sed -i "s|REPLACE_SERVER_HOST|$SERVER_HOST|g" "/etc/nginx/vhosts.d/$APPNAME.conf"
-    sed -i "s|REPLACE_SERVER_PORT|$SERVER_PORT|g" "/etc/nginx/vhosts.d/$APPNAME.conf"
+    sed -i "s|REPLACE_APPNAME|$APPNAME|g" "/etc/nginx/vhosts.d/$APPNAME.conf" &>/dev/null
+    sed -i "s|REPLACE_NGINX_HTTP|$NGINX_HTTP|g" "/etc/nginx/vhosts.d/$APPNAME.conf" &>/dev/null
+    sed -i "s|REPLACE_NGINX_HTTPS|$NGINX_HTTPS|g" "/etc/nginx/vhosts.d/$APPNAME.conf" &>/dev/null
+    sed -i "s|REPLACE_SERVER_PORT|$SERVER_PORT|g" "/etc/nginx/vhosts.d/$APPNAME.conf" &>/dev/null
+    sed -i "s|REPLACE_SERVER_LISTEN|$SERVER_LISTEN|g" "/etc/nginx/vhosts.d/$APPNAME.conf" &>/dev/null
     __sudo_root systemctl reload nginx &>/dev/null
   fi
 fi
@@ -181,7 +187,6 @@ if docker ps -a | grep -qs "$APPNAME"; then
   printf_cyan "Installed to $INSTDIR"
   printf_blue "Service is running on: $SERVER_IP:$SERVER_PORT"
   printf_blue "and should be available at: $SERVER_HOST:$SERVER_PORT_ADMIN"
-  rm -Rf "$DATADIR/dataDir"/*/.gitkeep &>/dev/null
 else
   printf_error "Something seems to have gone wrong with the install"
 fi
