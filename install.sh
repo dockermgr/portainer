@@ -189,8 +189,8 @@ dockermgr_install_version
 if docker ps -a | grep -qs "$APPNAME"; then
   printf_blue "DATADIR in $DATADIR"
   printf_cyan "Installed to $INSTDIR"
-  [[ -n "$SERVER_PORT" ]] && printf_blue "Service is running on: $SERVER_IP:$SERVER_PORT"
-  [[ -n "$SERVER_PORT" ]] && printf_blue "and should be available at: $SERVER_HOST:$SERVER_PORT"
+  [[ -n "$SERVER_PORT" ]] && printf_blue "Service is running on: $SERVER_IP:$SERVER_PORT_ADMIN"
+  [[ -n "$SERVER_PORT" ]] && printf_blue "and should be available at: http://$SERVER_HOST:$SERVER_PORT_ADMIN or http://$APPNAME.local:$SERVER_PORT_ADMIN"
   [[ -z "$SERVER_PORT" ]] && printf_yellow "This container does not have a web interface"
   [[ -n "$SERVER_PORT" ]] && printf_yellow "User: admin"
   [[ -n "$SERVER_PORT" ]] && printf_yellow "Password: admin"
