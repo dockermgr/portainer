@@ -74,13 +74,14 @@ SERVER_HOST="$(hostname -f 2>/dev/null || echo localhost)"
 SERVER_PORT="${SERVER_PORT:-8000}"
 SERVER_PORT_INT="${SERVER_PORT_INT:-8000}"
 SERVER_PORT_ADMIN="${SERVER_PORT_ADMIN:-9010}"
-SERVER_PORT_ADMIN_INT="${SERVER_PORT_ADMIN_INT:-8000}"
-SERVER_PORT_OTHER="${SERVER_PORT_OTHER:-}"
-SERVER_PORT_OTHER_INT="${SERVER_PORT_OTHER_INT:-}"
+SERVER_PORT_ADMIN_INT="${SERVER_PORT_ADMIN_INT:-9000}"
+SERVER_PORT_OTHER="${SERVER_PORT_OTHER:-9443}"
+SERVER_PORT_OTHER_INT="${SERVER_PORT_OTHER_INT:-9443}"
 SERVER_TIMEZONE="${TZ:-${TIMEZONE:-America/New_York}}"
-SERVER_SSL="${SERVER_SSL:-false}"
 SERVER_SSL_CRT="/etc/ssl/CA/CasjaysDev/certs/localhost.crt"
 SERVER_SSL_KEY="/etc/ssl/CA/CasjaysDev/private/localhost.key"
+[[ -f "$SERVER_SSL_CRT" ]] && [[ -f "$SERVER_SSL_KEY" ]] && SERVER_SSL="${SERVER_SSL:-true}" || SERVER_SSL="${SERVER_SSL:-false}"
+
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Require a version higher than
 dockermgr_req_version "$APPVERSION"
@@ -155,6 +156,7 @@ else
     -v /var/run/docker.sock:/var/run/docker.sock \
     -p $SERVER_LISTEN:$SERVER_PORT:$SERVER_PORT_INT \
     -p $SERVER_LISTEN:$SERVER_PORT_ADMIN:$SERVER_PORT_ADMIN_INT \
+    -p $SERVER_PORT_OTHER:$SERVER_PORT_OTHER_INT \
     "$HUB_URL" --logo https://avatars.githubusercontent.com/u/69495418 &>/dev/null
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
