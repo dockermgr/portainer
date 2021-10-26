@@ -156,7 +156,7 @@ else
     -v /var/run/docker.sock:/var/run/docker.sock \
     -p $SERVER_LISTEN:$SERVER_PORT:$SERVER_PORT_INT \
     -p $SERVER_LISTEN:$SERVER_PORT_ADMIN:$SERVER_PORT_ADMIN_INT \
-    -p $SERVER_PORT_OTHER:$SERVER_PORT_OTHER_INT \
+    -p $SERVER_LISTEN:$SERVER_PORT_OTHER:$SERVER_PORT_OTHER_INT \
     "$HUB_URL" --logo https://avatars.githubusercontent.com/u/69495418 &>/dev/null
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
