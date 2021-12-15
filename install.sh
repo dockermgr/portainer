@@ -7,7 +7,7 @@ SRC_DIR="${BASH_SOURCE%/*}"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Set bash options
 if [[ "$1" == "--debug" ]]; then shift 1 && set -xo pipefail && export SCRIPT_OPTS="--debug" && export _DEBUG="on"; fi
-
+set -x
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ##@Version       : 202108282020-git
 # @Author        : Jason Hempstead
@@ -65,7 +65,7 @@ REPORAW="$REPO/raw/$REPO_BRANCH"
 APPVERSION="$(__appversion "$REPORAW/version.txt")"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Setup plugins
-HUB_URL="portainer/portainer-ce"
+HUB_URL="cr.portainer.io/portainer/portainer-ce:latest"
 NGINX_HTTP="${NGINX_HTTP:-80}"
 NGINX_HTTPS="${NGINX_HTTPS:-443}"
 SERVER_IP="${CURRIP4:-127.0.0.1}"
